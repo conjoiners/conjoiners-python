@@ -32,4 +32,4 @@ nosetests.xml
 .project
 .pydevproject
 
-*.py~
+*.*~
