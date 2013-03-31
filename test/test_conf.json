@@ -1,0 +1,14 @@
+{
+    "recv_timeout": 50,
+    "conjoiners":
+    [
+        {
+            "name": "test",
+            "url": "ipc:///tmp/conjoiners_test"
+        },
+        {
+            "name": "test2",
+            "url": "ipc:///tmp/conjoiners_test2"
+        }
+    ]
+}
