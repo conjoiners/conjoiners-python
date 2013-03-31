@@ -1,7 +1,5 @@
 import conjoiners
 from unittest import TestCase
-import time
-import gevent
 
 class ConjoinerTest(TestCase):
     class Test(object):

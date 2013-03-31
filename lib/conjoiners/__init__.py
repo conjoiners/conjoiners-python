@@ -56,7 +56,7 @@ def implant(o, cfg_file, my_name):
             # rabbit and rest!
             _int_sock, int_connect = ensure_internal_pair(self, n)
             try:
-                _n, v = unpack_payload_single(int_connect.recv_pyobj(conf["recv_timeout"]), n)
+                _n, v = unpack_payload_single(int_connect.recv_pyobj(), n)
                 # TODO: multi msgs
                 # this can be done based on time in the payload
                 # or up to a maximum of messages.
@@ -116,7 +116,7 @@ def implant(o, cfg_file, my_name):
         def recv_objs(sock):
             while True:
                 try:
-                    payload = internalize_payload(sock.recv_json(conf["recv_timeout"]))
+                    payload = internalize_payload(sock.recv_json())
                     n, _v = unpack_payload_single(payload)
                     int_sock, _int_connect = ensure_internal_pair(o, n)
                     int_sock.send_pyobj(payload, zmq.NOBLOCK)
@@ -131,8 +131,8 @@ def implant(o, cfg_file, my_name):
             for c in conf["conjoiners"]:
                 if c["name"] != my_name:
                     con = ctx.socket(zmq.SUB)
-                    con.RCVTIMEO = conf["recv_timeout"]
                     con.connect(c["url"])
+                    con.setsockopt(zmq.RCVTIMEO, conf["recv_timeout"])
                     con.setsockopt(zmq.SUBSCRIBE, '')
                     grls.append(gevent.spawn(recv_objs, con))
 
@@ -177,8 +177,8 @@ def implant(o, cfg_file, my_name):
             int_connect = ctx.socket(zmq.PULL)
             url = "%s_%s_%s" % (BIND_PFX, id(self), n)
             int_sock.bind(url)
-            int_connect.RCVTIMEO = conf["recv_timeout"]
             int_connect.connect(url)
+            int_connect.setsockopt(zmq.RCVTIMEO, conf["recv_timeout"])
             self.__dict__[INTS] = int_sock
             self.__dict__[INTC] = int_connect
         else:
