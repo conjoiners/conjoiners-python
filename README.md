@@ -39,14 +39,14 @@ of object's field values, an internal 0MQ socket pair is used to queue
 writes. Reads are done from the queue before the internally stored
 value is being asked. This way, writes can frequently happen, but a
 read will still independently return the value seen when the read was
-done.
+done. Data changes from other conjoiners are received through subscribing to their publications, receive itself is being done in an almost non-blocking manner - through gevent's greenlets, with a configurable, ideally very short "recv_timeout".
 
 I didn't implement yet the part emptying the queue based on time,
 though I have internal time in the message payload. Some more research
 and work needs to be done at this point. Right now, only one message
 will be received from the queue.
 
-This library brings pyzmq as dependency.
+This library brings pyzmq as dependency, as well as gevent.
 
 To run the tests, just run bin/test_it.sh. Look there for complete,
 yet simple examples.
