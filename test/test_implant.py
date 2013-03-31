@@ -1,5 +1,6 @@
 import conjoiners
 from unittest import TestCase
+import time
 
 class ImplantTest(TestCase):
 
@@ -16,6 +17,7 @@ class ImplantTest(TestCase):
 
     def test_implant(self):
         self.iyes.test_value = "implant_value"
+        time.sleep(1)
         self.assertEquals(self.iyes.test_value, "implant_value")
 
 if __name__ == '__main__':
