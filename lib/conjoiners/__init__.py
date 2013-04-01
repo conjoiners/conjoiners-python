@@ -29,9 +29,6 @@ import json
 IMPLANTS = "conjoiners_implants"
 CTX = "conjoiners_ctx"
 EXTS = "conjoiners_ext_sock"
-GRLS = "conjoiners_ext_greenlets"
-INTS = "conjoiners_int_sock"
-INTC = "conjoiners_int_connect"
 BIND_PFX = "inproc://conjoiners_internal"
 RECV = "conjoiners_recv_objs"
 SET = "set_"
@@ -46,10 +43,6 @@ def implant(o, cfg_file, my_name):
 
     # overridden getter
     def get_it(self, n):
-        if id(self) in self.__class__.__dict__[IMPLANTS]:
-            gevent.sleep(0)
-            ensure_internal_pair(self, n)
-
         # simply return the current value
         # TODO: check if have to take care of thready-safety of unimpletnted objects here
         if self.__dict__.has_key(n):
@@ -57,24 +50,15 @@ def implant(o, cfg_file, my_name):
         else:
             return None
 
-    # overridden setter    
+    # overridden setter
     def set_it(self, n, v):
-        # what if it gets implanted right after this check?
-        if not id(self) in self.__class__.__dict__[IMPLANTS]:
-            # simply update the current value
-            # TODO: check if have to take care of thread-safety of unimpletnted objects here
-            self.__dict__[n] = v
-        else:
-            # propagate on the internal queue
-            int_sock, _int_connect = ensure_internal_pair(self, n)
-            payload = pack_payload_single(n, v) #TODO: set correct my_name
-            int_sock.send_pyobj(payload, zmq.NOBLOCK)
-
+        # simply update the current value
+        # TODO: check if have to take care of thread-safety of unimpletnted objects here
+        self.__dict__[n] = v
+        if id(self) in self.__class__.__dict__[IMPLANTS]:
             # multicast
             ext_sock = ensure_external_bind(self)
-            ext_sock.send_json(payload, zmq.NOBLOCK)
-
-            gevent.sleep(0)
+            ext_sock.send_json(pack_payload_single(n, v), zmq.NOBLOCK)
 
     # override setter and getter
     def ensure_hook():
@@ -98,27 +82,23 @@ def implant(o, cfg_file, my_name):
         def recv_objs(sock):
             while True:
                 try:
-                    payload = internalize_payload(sock.recv_json(flags=zmq.NOBLOCK))
-                    n, _v = unpack_payload_single(payload)
-                    int_sock, _int_connect = ensure_internal_pair(self, n)
-                    int_sock.send_pyobj(payload, zmq.NOBLOCK)
+                    payload = sock.recv_json(flags=zmq.NOBLOCK)
+                    payload = internalize_payload(payload)
+                    n, v = unpack_payload_single(payload)
+                    self.__dict__[n] = v
                 except:
                     pass # do nothing when no messages available
 
                 gevent.sleep(0)
 
         # connect and collect greenlet (not used yet)
-        if not self.__dict__.has_key(GRLS):
-            grls = []
-            for c in conf["conjoiners"]:
-                if c["name"] != my_name:
-                    con = ctx.socket(zmq.SUB)
-                    con.connect(c["url"])
-                    con.setsockopt(zmq.RCVTIMEO, conf["recv_timeout"])
-                    con.setsockopt(zmq.SUBSCRIBE, '')
-                    grls.append(gevent.spawn(recv_objs, con))
-
-            self.__dict__[GRLS] = grls
+        for c in conf["conjoiners"]:
+            if c["name"] != my_name:
+                con = ctx.socket(zmq.SUB)
+                con.setsockopt(zmq.RCVTIMEO, conf["recv_timeout"])
+                con.setsockopt(zmq.SUBSCRIBE, '')
+                con.connect(c["url"])
+                gevent.spawn(recv_objs, con)
 
     # bind to the external url
     def ensure_external_bind(o, ctx=None):
@@ -150,38 +130,6 @@ def implant(o, cfg_file, my_name):
             ctx = o.__dict__[CTX]
 
         return ctx
-
-    # bind and connect to the internal queue
-    def ensure_internal_pair(self, n):
-        if not self.__dict__.has_key(INTS):
-
-            # greenlet function
-            def recv_objs(sock):
-                while True:
-                    try:
-                        payload = sock.recv_pyobj(flags=zmq.NOBLOCK)
-                        _n, v = unpack_payload_single(payload, n)
-                        self.__dict__[n] = v
-                    except:
-                        pass # do nothing when no messages available
-
-                    gevent.sleep(0)
-
-            ctx = ensure_ctx()
-            int_sock = ctx.socket(zmq.PUSH)
-            int_connect = ctx.socket(zmq.PULL)
-            url = "%s_%s_%s" % (BIND_PFX, id(self), n)
-            int_sock.bind(url)
-            int_connect.connect(url)
-            int_connect.setsockopt(zmq.RCVTIMEO, conf["recv_timeout"])
-            gevent.spawn(recv_objs, int_connect)
-            self.__dict__[INTS] = int_sock
-            self.__dict__[INTC] = int_connect
-        else:
-            int_sock = self.__dict__[INTS]
-            int_connect = self.__dict__[INTC]
-
-        return (int_sock, int_connect)
 
     # encode key
     def key_n(n):

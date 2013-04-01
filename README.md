@@ -34,12 +34,14 @@ part switching between the class of the object and object itself. This is becaus
 not possible in Python to dynamically add setters/getters to objects,
 only to classes.
 
-Also, in order to avoid synchronisation and concurrent reads / writes
-of object's field values, an internal 0MQ socket pair is used to queue
-writes. Reads are done from the queue before the internally stored
-value is being asked. This way, writes can frequently happen, but a
-read will still independently return the value seen when the read was
-done. Data changes from other conjoiners are received through subscribing to their publications, receive itself is being done in an almost non-blocking manner - through gevent's greenlets, with a configurable, ideally very short "recv_timeout".
+Data changes from other conjoiners are received through subscription,
+receive itself is being done in an almost non-blocking manner -
+through gevent's greenlets, with a configurable, ideally very short
+"recv_timeout". The price for this unfortunately is that you have to
+use gevent. The minimal thing to do is to gevent.sleep(N) or
+gevent.sleep(0) before you want to read the values from the
+implant. The implant itself does gevent.sleep(0) after every received
+or unreceived message.
 
 I didn't implement yet the part emptying the queue based on time,
 though I have internal time in the message payload. Some more research
