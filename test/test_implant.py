@@ -9,7 +9,7 @@ class ImplantTest(TestCase):
 
     iyes = Test()
     ino = Test()
-    conjoiners.implant(iyes, "./test_conf.json", "test")
+    conjoiners.implant(iyes, "./conf_implant.json", "test_implant")
 
     def test_no_implant(self):
         self.ino.test_value = "no_implant_value"

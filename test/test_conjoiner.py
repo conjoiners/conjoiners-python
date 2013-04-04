@@ -9,8 +9,8 @@ class ConjoinerTest(TestCase):
 
     cj1 = Test()
     cj2 = Test()
-    conjoiners.implant(cj1, "./test_conf.json", "test")
-    conjoiners.implant(cj2, "./test_conf.json", "test2")
+    conjoiners.implant(cj1, "./conf_conjoiner.json", "test")
+    conjoiners.implant(cj2, "./conf_conjoiner.json", "test2")
 
     def test_send(self):
         self.cj1.test_value = "test_value"
