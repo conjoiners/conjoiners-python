@@ -44,7 +44,7 @@ def implant(o, cfg_file, my_name):
     # overridden getter
     def get_it(self, n):
         # simply return the current value
-        # TODO: check if have to take care of thready-safety of unimpletnted objects here
+        # TODO: check if have to take care of thready-safety of unimplatnted objects here
         if self.__dict__.has_key(n):
             return self.__dict__[n]
         else:
@@ -53,7 +53,7 @@ def implant(o, cfg_file, my_name):
     # overridden setter
     def set_it(self, n, v):
         # simply update the current value
-        # TODO: check if have to take care of thread-safety of unimpletnted objects here
+        # TODO: check if have to take care of thread-safety of unimplatnted objects here
         self.__dict__[n] = v
         if id(self) in self.__class__.__dict__[IMPLANTS]:
             # multicast
@@ -74,6 +74,11 @@ def implant(o, cfg_file, my_name):
                 return c["url"]
 
         return None
+    
+    # allow conjoined object to react on transenlightenments
+    def react(self):
+        if hasattr(self, "onTransenlightenment"):
+            self.onTransenlightenment()
 
     # connect to other conjoiners
     def ensure_conjoiners_connect(self, ctx):
@@ -86,6 +91,9 @@ def implant(o, cfg_file, my_name):
                     payload = internalize_payload(payload)
                     n, v = unpack_payload_single(payload)
                     self.__dict__[n] = v
+
+                    # enable any sort of reaction on data change
+                    react(self)
                 except:
                     pass # do nothing when no messages available
 

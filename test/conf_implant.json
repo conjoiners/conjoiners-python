@@ -1,0 +1,9 @@
+{
+    "recv_timeout": 50,
+    "conjoiners": [
+        {
+            "name": "test_implant",
+            "url": "ipc:///tmp/conjoiners_test_implant"
+        }
+    ]
+}
