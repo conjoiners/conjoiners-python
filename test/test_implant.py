@@ -1,6 +1,5 @@
 import conjoiners
 from unittest import TestCase
-import time
 
 class ImplantTest(TestCase):
 

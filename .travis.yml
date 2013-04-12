@@ -1,0 +1,10 @@
+language: python
+python:
+  - "2.7"
+install:
+  - pip install gevent
+  - pip install zmq 
+script:
+  - cd bin
+  - ./test_it.sh
+
