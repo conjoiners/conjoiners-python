@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/[conjoiners]/[conjoiners-python].png)](https://travis-ci.org/[conjoiners]/[conjoiners-python])
+
 # conjoiners - multi-platform / multi-language reactive programming library
 
 conjoiners is a library aiming to enable reactive programming for
