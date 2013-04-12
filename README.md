@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/[conjoiners]/[conjoiners-python].png)](https://travis-ci.org/[conjoiners]/[conjoiners-python])
+[![Build Status](https://travis-ci.org/conjoiners/conjoiners-python.png?branch=master)](https://travis-ci.org/conjoiners/conjoiners-python)
 
 # conjoiners - multi-platform / multi-language reactive programming library
 
